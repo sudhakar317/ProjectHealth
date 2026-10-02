@@ -1,0 +1,9 @@
+target/
+.idea/
+*.iml
+.vscode/
+.env
+*.log
+
+# local secrets file (never commit)
+application-local.properties
