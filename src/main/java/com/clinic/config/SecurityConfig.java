@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -38,7 +39,20 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/oauth2/**", "/login/**", "/error").permitAll()
+                        // Exists only when app.dev-login.enabled=true (local profile); a 404 otherwise
+                        .requestMatchers("/api/dev/login").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        // Visits are clinical authorship: only a doctor writes them, an admin reads.
+                        // These sit above the /api/patients rule, which would otherwise swallow the
+                        // nested visit path.
+                        .requestMatchers(HttpMethod.POST, "/api/patients/*/visits").hasRole("DOCTOR")
+                        .requestMatchers(HttpMethod.GET, "/api/patients/*/visits").hasAnyRole("ADMIN", "DOCTOR")
+                        // Only a doctor registers patients; an admin may read and edit but not create.
+                        // The exact path keeps /api/patients/{id}/restore on the rule below.
+                        .requestMatchers(HttpMethod.POST, "/api/patients").hasRole("DOCTOR")
+                        .requestMatchers("/api/patients/**").hasAnyRole("ADMIN", "DOCTOR")
+                        .requestMatchers(HttpMethod.GET, "/api/visits/**").hasAnyRole("ADMIN", "DOCTOR")
+                        .requestMatchers("/api/visits/**").hasRole("DOCTOR")
                         .anyRequest().authenticated())
                 .oauth2Login(oauth -> oauth
                         .userInfoEndpoint(ui -> ui.oidcUserService(oidcUserService))

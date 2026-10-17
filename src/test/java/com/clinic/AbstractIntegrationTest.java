@@ -18,6 +18,8 @@ public abstract class AbstractIntegrationTest {
     @BeforeEach
     void cleanDatabase() {
         // TRUNCATE bypasses the row-level append-only trigger on audit_log
-        jdbc.execute("TRUNCATE TABLE app_user, audit_log RESTART IDENTITY");
+        // patient is listed because it has a foreign key to app_user; TRUNCATE also bypasses the
+        // row-level append-only trigger on audit_log
+        jdbc.execute("TRUNCATE TABLE visit, patient, app_user, audit_log RESTART IDENTITY");
     }
 }
