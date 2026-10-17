@@ -41,8 +41,8 @@ public class DoctorService {
         if (users.findByEmail(email).isPresent()) {
             throw new ConflictException("A user with this email already exists", "email");
         }
-        AppUser saved = users.save(AppUser.doctor(email, request.fullName().trim(), request.phone().trim(),
-                specializations.find(request.specializationId()), request.registrationNumber().trim(), actor));
+        AppUser saved = users.save(AppUser.doctor(email, request.fullName().trim(), trimmed(request.phone()),
+                specializations.find(request.specializationId()), actor));
         audit.record(AuditService.DOCTOR_CREATED, actor, describe(saved), ip);
         return DoctorResponse.from(saved);
     }
@@ -50,9 +50,8 @@ public class DoctorService {
     @Transactional
     public DoctorResponse update(Long id, UpdateDoctorRequest request, String actor, String ip) {
         AppUser doctor = findDoctor(id);
-        doctor.updateDoctor(request.fullName().trim(), request.phone().trim(),
-                specializations.find(request.specializationId()), request.registrationNumber().trim(),
-                request.active());
+        doctor.updateDoctor(request.fullName().trim(), trimmed(request.phone()),
+                specializations.find(request.specializationId()), request.active());
         audit.record(AuditService.DOCTOR_UPDATED, actor, describe(doctor), ip);
         return DoctorResponse.from(doctor);
     }
@@ -67,6 +66,11 @@ public class DoctorService {
     private AppUser findDoctor(Long id) {
         return users.findById(id).filter(u -> u.getRole() == Role.DOCTOR)
                 .orElseThrow(() -> new NotFoundException("Doctor not found"));
+    }
+
+    /** Phone is optional, so it arrives null or blank when nobody has the number yet. */
+    private static String trimmed(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
     }
 
     private String describe(AppUser doctor) {

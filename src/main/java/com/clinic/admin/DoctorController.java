@@ -31,10 +31,9 @@ public class DoctorController {
     public List<DoctorResponse> list(@RequestParam(required = false) String fullName,
                                      @RequestParam(required = false) String email,
                                      @RequestParam(required = false) String phone,
-                                     @RequestParam(required = false) String registrationNumber,
                                      @RequestParam(required = false) Long specializationId,
                                      @RequestParam(required = false) Boolean active) {
-        return service.list(new DoctorFilter(fullName, email, phone, registrationNumber, specializationId, active));
+        return service.list(new DoctorFilter(fullName, email, phone, specializationId, active));
     }
 
     @GetMapping("/{id}")

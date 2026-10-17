@@ -8,8 +8,7 @@ import java.util.List;
 import org.springframework.data.jpa.domain.Specification;
 
 /** Optional filters over the same fields used in the add-doctor form. Text filters are case-insensitive "contains". */
-public record DoctorFilter(String fullName, String email, String phone, String registrationNumber,
-                           Long specializationId, Boolean active) {
+public record DoctorFilter(String fullName, String email, String phone, Long specializationId, Boolean active) {
 
     Specification<AppUser> toSpecification() {
         return (root, query, cb) -> {
@@ -18,7 +17,6 @@ public record DoctorFilter(String fullName, String email, String phone, String r
             addContains(p, cb, root.get("fullName"), fullName);
             addContains(p, cb, root.get("email"), email);
             addContains(p, cb, root.get("phone"), phone);
-            addContains(p, cb, root.get("registrationNumber"), registrationNumber);
             if (specializationId != null) {
                 p.add(cb.equal(root.get("specialization").get("id"), specializationId));
             }

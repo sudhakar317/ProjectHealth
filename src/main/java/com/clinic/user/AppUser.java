@@ -44,6 +44,7 @@ public class AppUser {
     @JoinColumn(name = "specialization_id")
     private Specialization specialization;
 
+    /** No longer captured or shown. The column is kept so values recorded before it was dropped survive. */
     @Column(name = "registration_number")
     private String registrationNumber;
 
@@ -66,22 +67,19 @@ public class AppUser {
     }
 
     public static AppUser doctor(String email, String fullName, String phone, Specialization specialization,
-                                 String registrationNumber, String createdBy) {
+                                 String createdBy) {
         AppUser user = new AppUser(email, Role.DOCTOR, true);
         user.fullName = fullName;
         user.phone = phone;
         user.specialization = specialization;
-        user.registrationNumber = registrationNumber;
         user.createdBy = createdBy;
         return user;
     }
 
-    public void updateDoctor(String fullName, String phone, Specialization specialization,
-                             String registrationNumber, boolean active) {
+    public void updateDoctor(String fullName, String phone, Specialization specialization, boolean active) {
         this.fullName = fullName;
         this.phone = phone;
         this.specialization = specialization;
-        this.registrationNumber = registrationNumber;
         this.active = active;
     }
 
@@ -124,10 +122,6 @@ public class AppUser {
 
     public Specialization getSpecialization() {
         return specialization;
-    }
-
-    public String getRegistrationNumber() {
-        return registrationNumber;
     }
 
     public Instant getCreatedAt() {
