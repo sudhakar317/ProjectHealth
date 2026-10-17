@@ -1,0 +1,12 @@
+target/
+.git/
+.github/
+.idea/
+.vscode/
+*.iml
+*.log
+.env
+
+# Local secrets must never reach the image, even though .gitignore already
+# keeps this file out of the repository.
+src/main/resources/application-local.properties
