@@ -10,6 +10,7 @@ import com.clinic.auth.AllowlistException;
 import com.clinic.auth.AllowlistException.Reason;
 import com.clinic.auth.AllowlistService;
 import com.clinic.auth.LoginAuditHandlers;
+import com.clinic.config.AppProperties;
 import com.clinic.user.AppUser;
 import com.clinic.user.AppUserRepository;
 import com.clinic.user.Role;
@@ -33,6 +34,9 @@ class AllowlistIT extends AbstractIntegrationTest {
 
     @Autowired
     LoginAuditHandlers handlers;
+
+    @Autowired
+    AppProperties props;
 
     @Test
     void registeredActiveVerifiedUserIsAllowedAndSubIsBound() {
@@ -85,7 +89,9 @@ class AllowlistIT extends AbstractIntegrationTest {
         assertThat(rows).hasSize(1);
         assertThat(rows.get(0).getActorEmail()).isEqualTo("x@example.com");
         assertThat(rows.get(0).getDetails()).isEqualTo("not_registered");
-        assertThat(response.getRedirectedUrl()).isEqualTo("/?error=not_registered");
+        // The OAuth callback lands on the backend port, which serves no pages, so the handler sends
+        // the browser back to the frontend origin rather than a path on this one.
+        assertThat(response.getRedirectedUrl()).isEqualTo(props.frontendUrl() + "/?error=not_registered");
     }
 
     @Test

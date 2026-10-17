@@ -12,7 +12,8 @@ import org.springframework.web.server.ResponseStatusException;
 @RestController
 public class MeController {
 
-    public record MeResponse(String email, String role) {
+    /** The id lets the client tell the signed-in doctor's own records apart from another doctor's. */
+    public record MeResponse(Long id, String email, String role) {
     }
 
     private final AppUserRepository users;
@@ -27,6 +28,6 @@ public class MeController {
         AppUser user = users.findByEmail(principal.getEmail().toLowerCase())
                 .filter(AppUser::isActive)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
-        return new MeResponse(user.getEmail(), user.getRole().name());
+        return new MeResponse(user.getId(), user.getEmail(), user.getRole().name());
     }
 }

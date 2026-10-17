@@ -35,8 +35,9 @@ public class VisitController {
     @GetMapping("/api/patients/{patientId}/visits")
     public List<VisitResponse> listForPatient(@PathVariable Long patientId,
                                               @RequestParam(defaultValue = "false") boolean includeInactive,
-                                              @AuthenticationPrincipal OidcUser principal) {
-        return service.listForPatient(patientId, includeInactive, email(principal));
+                                              @AuthenticationPrincipal OidcUser principal,
+                                              HttpServletRequest http) {
+        return service.listForPatient(patientId, includeInactive, email(principal), http.getRemoteAddr());
     }
 
     @PostMapping("/api/patients/{patientId}/visits")
@@ -64,8 +65,9 @@ public class VisitController {
     }
 
     @GetMapping("/api/visits/{id}")
-    public VisitResponse get(@PathVariable Long id, @AuthenticationPrincipal OidcUser principal) {
-        return service.get(id, email(principal));
+    public VisitResponse get(@PathVariable Long id, @AuthenticationPrincipal OidcUser principal,
+                             HttpServletRequest http) {
+        return service.get(id, email(principal), http.getRemoteAddr());
     }
 
     @PutMapping("/api/visits/{id}")

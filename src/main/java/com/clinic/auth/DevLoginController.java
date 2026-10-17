@@ -1,7 +1,7 @@
 package com.clinic.auth;
 
 import com.clinic.audit.AuditService;
-import com.clinic.common.ApiExceptionHandler;
+import com.clinic.common.ApiError;
 import com.clinic.user.AppUser;
 import com.clinic.user.AppUserRepository;
 import com.clinic.user.Role;
@@ -14,6 +14,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -44,7 +46,14 @@ public class DevLoginController {
     private final AuditService audit;
     private final HttpSessionSecurityContextRepository contextRepository = new HttpSessionSecurityContextRepository();
 
-    public DevLoginController(AppUserRepository users, AuditService audit) {
+    public DevLoginController(AppUserRepository users, AuditService audit, Environment environment) {
+        // This endpoint signs anyone in with no credential at all. A property alone is too easy to set
+        // by accident in production, so it must also run under the local profile or the app won't start.
+        if (!environment.acceptsProfiles(Profiles.of("local"))) {
+            throw new IllegalStateException(
+                    "app.dev-login.enabled is set outside the 'local' profile. Refusing to start: it would let "
+                            + "anyone sign in as any doctor or admin without a password.");
+        }
         this.users = users;
         this.audit = audit;
     }
@@ -57,7 +66,7 @@ public class DevLoginController {
         if (user == null || !user.isActive() || (user.getRole() != Role.ADMIN && user.getRole() != Role.DOCTOR)) {
             audit.record(AuditService.LOGIN_FAILURE, email, "dev_login_not_allowed", request.getRemoteAddr());
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(new ApiExceptionHandler.ApiError("This email is not registered as an admin or doctor", Map.of()));
+                    .body(ApiError.of("This email is not registered as an admin or doctor"));
         }
 
         Instant now = Instant.now();

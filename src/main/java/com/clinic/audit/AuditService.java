@@ -33,6 +33,9 @@ public class AuditService {
     public static final String PATIENT_DELETED = "PATIENT_DELETED";
     public static final String PATIENT_RESTORED = "PATIENT_RESTORED";
     public static final String VISIT_CREATED = "VISIT_CREATED";
+    public static final String VISIT_VIEWED = "VISIT_VIEWED";
+    /** A patient's whole visit history was opened: one row per opening, not one per visit shown. */
+    public static final String VISIT_HISTORY_VIEWED = "VISIT_HISTORY_VIEWED";
     public static final String VISIT_UPDATED = "VISIT_UPDATED";
     public static final String VISIT_DELETED = "VISIT_DELETED";
     public static final String VISIT_RESTORED = "VISIT_RESTORED";

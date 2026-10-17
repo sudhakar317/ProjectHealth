@@ -43,6 +43,14 @@ public class Visit {
     @Column(name = "next_visit_date")
     private LocalDate nextVisitDate;
 
+    /**
+     * The earlier visit whose follow-up this one answers. Null for a walk-in, or for a visit
+     * recorded before the clinic started booking follow-ups: those start a chain of their own.
+     */
+    @ManyToOne
+    @JoinColumn(name = "previous_visit_id")
+    private Visit previousVisit;
+
     @Column(name = "deleted_at")
     private Instant deletedAt;
 
@@ -72,6 +80,22 @@ public class Visit {
         this.visitDate = visitDate;
         this.notes = notes;
         this.nextVisitDate = nextVisitDate;
+    }
+
+    /**
+     * Only an admin reassigns a visit, and only to a doctor the service has already validated.
+     * Null is rejected: a visit must always keep an author.
+     */
+    public void reassignTo(AppUser newDoctor) {
+        if (newDoctor == null) {
+            throw new IllegalArgumentException("A visit must always have a doctor");
+        }
+        this.doctor = newDoctor;
+    }
+
+    /** Null unlinks, which is how a doctor says "this was not the scheduled follow-up". */
+    public void linkTo(Visit previous) {
+        this.previousVisit = previous;
     }
 
     public void softDelete() {
@@ -113,6 +137,10 @@ public class Visit {
 
     public LocalDate getNextVisitDate() {
         return nextVisitDate;
+    }
+
+    public Visit getPreviousVisit() {
+        return previousVisit;
     }
 
     public Instant getCreatedAt() {
